@@ -7,31 +7,76 @@
 class RomanticAudioEngine {
   constructor() {
     this.isPlaying = false;
+    this.initialized = false;
 
-    // Create hidden audio element
+    // Create hidden audio element with standard mobile-friendly attributes
     this.audio = document.createElement("audio");
-    this.audio.src = "WhatsApp Audio 2026-10-05 at 9.49.08 PM.mpeg";
+    this.audio.setAttribute("playsinline", "");
+    this.audio.setAttribute("webkit-playsinline", "");
     this.audio.preload = "auto";
-    this.audio.volume = 0.4;
     this.audio.loop = true;
+    this.audio.volume = 0.6;
     this.audio.style.display = "none";
+
+    // Set source - using clean filename with fallback type
+    const source = document.createElement("source");
+    source.src = "wedding_music.mp3";
+    source.type = "audio/mpeg";
+    this.audio.appendChild(source);
+
+    // Fallback source pointing to original file if needed
+    const fallbackSource = document.createElement("source");
+    fallbackSource.src = encodeURI("WhatsApp Audio 2026-10-05 at 9.49.08 PM.mpeg");
+    fallbackSource.type = "audio/mpeg";
+    this.audio.appendChild(fallbackSource);
+
     document.body.appendChild(this.audio);
+
+    // Add listeners to sync state accurately on mobile
+    this.audio.addEventListener("play", () => {
+      this.isPlaying = true;
+      this.updateUI();
+    });
+
+    this.audio.addEventListener("pause", () => {
+      this.isPlaying = false;
+      this.updateUI();
+    });
+
+    this.audio.addEventListener("ended", () => {
+      this.isPlaying = false;
+      this.updateUI();
+    });
+
+    // Listen for the first touch/click across the document to unlock audio context if autoplay was blocked
+    const unlockAudio = () => {
+      if (!this.initialized) {
+        this.audio.load();
+        this.initialized = true;
+      }
+    };
+    window.addEventListener("touchstart", unlockAudio, { once: true, passive: true });
+    window.addEventListener("click", unlockAudio, { once: true, passive: true });
   }
 
   play() {
-
-    this.audio.play().then(() => {
-      this.isPlaying = true;
-      this.updateUI();
-    }).catch((err) => {
-      console.warn("Audio play failed:", err);
-    });
+    this.initialized = true;
+    const playPromise = this.audio.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        this.isPlaying = true;
+        this.updateUI();
+      }).catch((err) => {
+        console.warn("Audio playback delayed or blocked:", err);
+        this.isPlaying = false;
+        this.updateUI();
+      });
+    }
   }
 
   pause() {
     this.audio.pause();
     this.isPlaying = false;
-    clearTimeout(this.endTimer);
     this.updateUI();
   }
 
