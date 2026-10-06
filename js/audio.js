@@ -7,39 +7,18 @@
 class RomanticAudioEngine {
   constructor() {
     this.isPlaying = false;
-    this.END_TIME = 90; // 1 minute 30 seconds
-    this.endTimer = null;
 
     // Create hidden audio element
     this.audio = document.createElement("audio");
-    this.audio.src = "Duppattawaali (From Odum Kuthira Chaadum Kuthira ).mp4";
+    this.audio.src = "WhatsApp Audio 2026-10-05 at 9.49.08 PM.mpeg";
     this.audio.preload = "auto";
     this.audio.volume = 0.4;
-    this.audio.loop = true;  // native loop as fallback safety net
+    this.audio.loop = true;
     this.audio.style.display = "none";
     document.body.appendChild(this.audio);
-
-    // Loop: when reaching 1:30, jump back to 0:00 and keep playing
-    this.audio.addEventListener("timeupdate", () => {
-      if (this.audio.currentTime >= this.END_TIME) {
-        this.audio.currentTime = 0;
-      }
-    });
-
-    // On natural end (loop=true means this fires then restarts;
-    // seek to 0 immediately so it restarts from beginning not mid-file)
-    this.audio.addEventListener("seeking", () => {
-      if (this.audio.currentTime >= this.END_TIME) {
-        this.audio.currentTime = 0;
-      }
-    });
   }
 
   play() {
-    // Reset to beginning if past end time
-    if (this.audio.currentTime >= this.END_TIME) {
-      this.audio.currentTime = 0;
-    }
 
     this.audio.play().then(() => {
       this.isPlaying = true;
